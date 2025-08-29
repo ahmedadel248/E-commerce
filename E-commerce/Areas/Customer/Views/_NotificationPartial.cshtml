@@ -1,0 +1,16 @@
+﻿@section Scripts {
+    <partial name="_NotificationPartial" />
+
+    @if (TempData["success-notification"] != null)
+    {
+        <script>
+            toastr.success('@TempData["success-notification"]');
+        </script>
+    }
+    else if (TempData["error-notification"] != null)
+    {
+        <script>
+            toastr.error('@TempData["error-notification"]');
+        </script>
+    }
+}
