@@ -12,19 +12,18 @@ namespace E_commerce.Utility
             // send email to users
             var client = new SmtpClient("smtp.gmail.com", 587)
             {
-                EnableSsl = true,
-                UseDefaultCredentials = false,
-                Credentials = new NetworkCredential("ahmeeeed02375@gmail.com\r\n", "Asdfghjkl2&248")
+                EnableSsl = true, // to encrypt data
+                UseDefaultCredentials = false, // to not use default credentials
+                Credentials = new NetworkCredential("ahmeeeed02375@gmail.com\r\n", "Asdfghjkl2&248") // put your email and password here to send email to users
             };
-            // put your email and password here to send email
             return client.SendMailAsync(
-                new MailMessage(from: "your.email@live.com",
-                to: email,
-                subject,
-                htmlMessage
+                new MailMessage(from: "your.email@live.com", // change it to your email
+                to: email,// user email
+                subject,// subject
+                htmlMessage // body of the email
                 )
                 {
-                    IsBodyHtml = true
+                    IsBodyHtml = true // to support html in the body
                 });
 
 
