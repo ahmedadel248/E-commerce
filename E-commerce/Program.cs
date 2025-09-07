@@ -1,3 +1,7 @@
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
+using Microsoft.EntityFrameworkCore;
+
 namespace E_commerce
 {
     public class Program
@@ -6,8 +10,28 @@ namespace E_commerce
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
+            // Add services to the container to aplly SOLID PRINCPLE.
+            // to use dbcontext we should add this service.
+            //ADD Constractour to use on configure.
+            builder.Services.AddDbContext<ApplicationDbContext>(option => 
+            {
+                option.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+            }
+            );
+            builder.Services.AddIdentity<ApplicationUser, IdentityRole>(opition=>
+            {
+                opition.Password.RequiredLength = 8;
+                opition.Password.RequireNonAlphanumeric = false;
+
+            })
+                .AddEntityFrameworkStores<ApplicationDbContext>()
+            .AddDefaultTokenProviders();
+            builder.Services.AddTransient<IEmailSender, EmailSender>();
             builder.Services.AddControllersWithViews();
+            builder.Services.AddScoped<IRepositories<Catgory>, Repository<Catgory>>();
+            builder.Services.AddScoped<IRepositories<Brand>, Repository<Brand>>();
+            builder.Services.AddScoped<IProductRepositories, ProductRepository>();
+
 
             var app = builder.Build();
 

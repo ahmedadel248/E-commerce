@@ -1,20 +1,33 @@
 ﻿using E_commerce.Models;
+using E_commerce.Repositories;
+using E_commerce.Repositories.IRepositories;
 using E_commerce.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using System.Threading.Tasks;
 
 namespace E_commerce.Areas.Admin.Controllers
 {
     [Area(SD.AdminArea)]
     public class CatgoryController : Controller
     {
-        private ApplicationDbContext _context = new();
+        // private ApplicationDbContext _context = new();
+        //using Solid Single Repository Princple
+        //private CategoryRepository _catgoryRepository = new();
 
-        public IActionResult Index()
+        // private IRepositories<Catgory> _catgoryRepository = new Repository<Catgory>();
+        private IRepositories<Catgory> _catgoryRepository; //= new Repository<Catgory>();
+
+        public CatgoryController(IRepositories<Catgory> catgoryRepository)
         {
-            var catgories = _context.Catgories;
+            _catgoryRepository = catgoryRepository;
+        }
 
-            return View(catgories.ToList());
+        public async Task <IActionResult> Index()
+        {
+            var catgories = await _catgoryRepository.GetAll();
+
+            return View(catgories);
         }
 
         [HttpGet]
@@ -25,7 +38,7 @@ namespace E_commerce.Areas.Admin.Controllers
         }
 
         [HttpPost]
-        public IActionResult Create(Catgory catgory)
+        public async Task<IActionResult> Create(Catgory catgory)
         {
             //validate on data using model state dictionary
             //catch all datatypes(properties of model) excpact id icollection
@@ -45,10 +58,13 @@ namespace E_commerce.Areas.Admin.Controllers
                 TempData["error-notification"] = String.Join(", ", errors.Select(e => e.ErrorMessage));
                 return View(catgory);
             }
-            
 
-            _context.Catgories.Add(catgory);
-            _context.SaveChanges();
+
+            //_context.Catgories.Add(catgory);
+            //_context.SaveChanges();
+            //USING SRP
+           await _catgoryRepository.Create(catgory);
+            await _catgoryRepository.CommitAsync();
 
             TempData["success-notification"] = "Add Category successfully";
             //native tem data
@@ -64,10 +80,10 @@ namespace E_commerce.Areas.Admin.Controllers
         }
 
         [HttpGet]
-        public IActionResult Edit(int id)
+        public async Task<IActionResult> Edit(int id)
         {
-            var catgory = _context.Catgories.FirstOrDefault(c => c.Id == id);
-
+            //var catgory = _context.Catgories.FirstOrDefault(c => c.Id == id);
+            var catgory =  await _catgoryRepository.GetOne(c => c.Id == id);
             if (catgory is null)
                 return RedirectToAction(SD.NotFoundPage, SD.HomeController);
 
@@ -75,16 +91,21 @@ namespace E_commerce.Areas.Admin.Controllers
         }
 
         [HttpPost]
-        public IActionResult Edit(Catgory catgory)
+        public async Task <IActionResult> Edit(Catgory catgory)
         {
+
             if (!ModelState.IsValid)
             {
                 var errors = ModelState.Values.SelectMany(e => e.Errors);
                 TempData["error-notification"] = String.Join(", ", errors.Select(e => e.ErrorMessage));
                 return View(catgory);
             }
-            _context.Catgories.Update(catgory);
-            _context.SaveChanges();
+            // _context.Catgories.Update(catgory);
+            //_context.SaveChanges();
+
+
+             _catgoryRepository.Update(catgory);
+             await _catgoryRepository.CommitAsync();
 
             TempData["success-notification"] = "Update Category successfully";
 
@@ -93,16 +114,18 @@ namespace E_commerce.Areas.Admin.Controllers
         }
 
 
-        public IActionResult Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
 
-            var catgory = _context.Catgories.FirstOrDefault(c => c.Id == id);
-
+          //  var catgory = _context.Catgories.FirstOrDefault(c => c.Id == id);
+          var catgory = await _catgoryRepository.GetOne(c => c.Id == id);
             if (catgory is null)
                 return RedirectToAction(SD.NotFoundPage, SD.HomeController);
 
-            _context.Catgories.Remove(catgory);
-            _context.SaveChanges();
+            // _context.Catgories.Remove(catgory);
+            //_context.SaveChanges();
+             _catgoryRepository.Delete(catgory);
+            await _catgoryRepository.CommitAsync();
 
             TempData["success-notification"] = "Delete Category successfully";
 
